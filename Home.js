@@ -1,126 +1,64 @@
-// Home.js
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Navbar from './Navbar';  // Import the Navbar component
+import Navbar from './Navbar';
 
 const Home = () => {
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const navigate = useNavigate();
+  const baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const handleLogout = async () => {
     try {
-      const response = await axios.post('http://localhost:5000/login', { username, password });
+      const response = await axios.get(`${baseURL}/logout`);
       if (response.status === 200) {
-        setLoggedIn(true);
-        setError('');
+        console.log('Logged out successfully.');
+        alert('Logout bem-sucedido.');
+        navigate('/'); // Redireciona para a página de login
+      } else {
+        console.error('Logout failed:', response.data.error);
+        alert('Falha no logout. Por favor, tente novamente.');
       }
     } catch (error) {
-      if (error.response) {
-        setError(error.response.data.error);
-      } else {
-        setError('An unexpected error occurred. Please try again later.');
-      }
+      console.error('Logout error:', error);
+      alert('Falha no logout. Por favor, tente novamente.');
     }
-  };
-
-  const handleLogout = () => {
-    setLoggedIn(false);
-    setUsername('');
-    setPassword('');
   };
 
   return (
     <div>
-      <Navbar /> {/* Include the Navbar component */}
-      <div style={styles.container}>
-        <h1 style={styles.heading}>Olá</h1>
-        {loggedIn ? (
-          <div>
-            <p style={styles.welcome}>Olá, {username}!</p>
-            <button style={styles.button} onClick={handleLogout}>Logout</button>
-          </div>
-        ) : (
-          <div>
-            <p style={styles.welcome}>Bem vindo ao Edu!</p>
-            <form onSubmit={handleLogin} style={styles.form}>
-              <div>
-                <label style={styles.label}>usuário:</label>
-                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} style={styles.input} required />
-              </div>
-              <div>
-                <label style={styles.label}>senha:</label>
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} style={styles.input} required />
-              </div>
-              <button type="submit" style={styles.button}>Entrar</button>
-              {error && <p style={styles.error}>{error}</p>}
-            </form>
-          </div>
-        )}
-        <Link to="/about" style={styles.link}>Quem somos</Link>
-      </div>
+      <Navbar handleLogout={handleLogout} /> {/* Passa a função handleLogout para o componente Navbar */}
+      <main style={styles.main}>
+        <h1 style={styles.heading}>Home Page</h1>
+        <p style={styles.content}>Bem-vindo à Home Page!</p>
+        <p style={styles.content}>Aqui você pode adicionar mais conteúdo e funcionalidades.</p>
+      </main>
+      <footer style={styles.footer}>
+        <p>&copy; 2024 Sua Empresa</p>
+      </footer>
     </div>
   );
 };
 
 const styles = {
-  container: {
-    maxWidth: '600px',
-    margin: '0 auto',
+  main: {
     padding: '20px',
-    backgroundColor: '#f0f0f0',  // Light gray background
-    borderRadius: '8px',
-    boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
+    textAlign: 'center',
   },
   heading: {
-    color: '#2196f3',  // Blue color
-    textAlign: 'center',
+    fontSize: '2rem',
+    color: '#333',
   },
-  welcome: {
-    fontSize: '1.2rem',
-    textAlign: 'center',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginTop: '20px',
-  },
-  label: {
-    marginBottom: '5px',
-  },
-  input: {
-    width: '100%',
-    padding: '8px',
-    marginBottom: '15px',
-    borderRadius: '4px',
-    border: '1px solid #ccc',
-    boxSizing: 'border-box',
-  },
-  button: {
-    backgroundColor: '#2196f3',  // Blue color
-    color: '#fff',
-    border: 'none',
-    padding: '10px 20px',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    marginTop: '10px',
+  content: {
     fontSize: '1rem',
+    color: '#666',
   },
-  error: {
-    color: 'red',
+  footer: {
     textAlign: 'center',
-    marginTop: '10px',
-  },
-  link: {
-    display: 'block',
-    textAlign: 'center',
-    marginTop: '20px',
-    textDecoration: 'none',
-    color: '#2196f3',  // Blue color
+    padding: '10px',
+    backgroundColor: '#f0f0f0',
+    position: 'fixed',
+    width: '100%',
+    bottom: 0,
   },
 };
 

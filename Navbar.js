@@ -41,7 +41,7 @@ const styles = {
     padding: '10px 15px',  // Increase padding for better touch target
   },
   logoutButton: {
-    backgroundColor: '#ff4d4d',  // Red color
+    backgroundColor: '#4CAF50',  // Green color
     color: '#fff',  // White color
     border: 'none',
     padding: '8px 12px',  // Reduce padding for a more compact button

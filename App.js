@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
 import Home from './Home'; // Importing the Home component
+import Profile from './Profile'; // Importing the Home component
 
 const App = () => {
   const [username, setUsername] = useState('');
@@ -153,6 +154,7 @@ const Main = () => {
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </Router>
   );

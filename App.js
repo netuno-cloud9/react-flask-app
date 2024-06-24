@@ -1,120 +1,161 @@
-from flask import Flask, jsonify, request, session, send_from_directory, redirect, url_for
-from flask_cors import CORS
-from flask_mysqldb import MySQL
-import os
-import secrets
-from dotenv import load_dotenv
-import logging
+import React, { useState } from 'react';
+import axios from 'axios';
+import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
+import Home from './Home'; // Importing the Home component
 
-#load_dotenv()
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
+const App = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+  const navigate = useNavigate();
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(`${baseURL}/login`, { username, password });
 
-app = Flask(__name__, static_folder='frontend/build', static_url_path='/')
-CORS(app, supports_credentials=True)
-#CORS(app)
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'BASH$634pcpv!!'  # Replace with your actual MySQL password
-app.config['MYSQL_DB'] = 'edu_db'
-app.config['MYSQL_PORT'] = 3307  # Replace with your actual MySQL port if different
-app.config['MYSQL_CURSORCLASS'] = 'DictCursor'  # Return query results as dictionaries
+      if (response.data.message === 'Login successful') {
+        setIsLoggedIn(true);
+        console.log(`Login successful for username: ${username}`);
+        alert('Login successful!');
+        navigate('/home'); // Redirect to home page
+      } else {
+        console.warn(`Login failed for username: ${username}`);
+        alert(response.data.error);
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      alert('Login failed. Please try again.');
+    }
+  };
 
-# Configure MySQL connection using environment variables
-#app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST', 'localhost')
-#app.config['MYSQL_USER'] = os.getenv('MYSQL_USER', 'root')
-#app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD', '')
-#app.config['MYSQL_DB'] = os.getenv('MYSQL_DB', 'edu_db')
-#app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT', 3307))
-#app.config['MYSQL_CURSORCLASS'] = 'DictCursor'  # Return query results as dictionaries
+  const handleLogout = async () => {
+    try {
+      const response = await axios.get(`${baseURL}/logout`);
+      if (response.status === 200) {
+        setIsLoggedIn(false);
+        console.log('Logged out successfully.');
+        alert('Logged out successfully.');
+      } else {
+        console.error('Logout failed:', response.data.error);
+        alert('Logout failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      alert('Logout failed. Please try again.');
+    }
+  };
 
-mysql = MySQL(app)
+  return (
+    <div style={{
+      fontFamily: 'Helvetica Neue, Arial, sans-serif',
+      backgroundColor: '#f1f3f5',
+      margin: 0,
+      padding: 0,
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh',
+    }}>
+      <div style={{
+        maxWidth: '360px',
+        width: '100%',
+        margin: '50px auto',
+        padding: '30px',
+        border: 'none',
+        borderRadius: '12px',
+        backgroundColor: '#ffffff',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+        textAlign: 'center',
+        transition: 'all 0.3s ease',
+      }} className="app">
+        {isLoggedIn ? (
+          <div>
+            <h1>Welcome {username}</h1>
+            <button onClick={handleLogout} style={{
+              width: '100%',
+              padding: '12px',
+              marginTop: '10px',
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '16px',
+              cursor: 'pointer',
+              transition: 'background-color 0.3s ease',
+            }}>Logout</button>
+          </div>
+        ) : (
+          <div>
+            <h1>Login</h1>
+            <form onSubmit={handleLogin} className="login-form" style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}>
+              <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  marginBottom: '15px',
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  boxSizing: 'border-box',
+                  transition: 'border-color 0.3s ease',
+                }}
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  marginBottom: '15px',
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  boxSizing: 'border-box',
+                  transition: 'border-color 0.3s ease',
+                }}
+              />
+              <button type="submit" style={{
+                width: '100%',
+                padding: '12px',
+                marginTop: '10px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '16px',
+                cursor: 'pointer',
+                transition: 'background-color 0.3s ease',
+              }}>Login</button>
+            </form>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
-# Secret key for session management
-app.secret_key = 'your_secret_key_for_session'
+const Main = () => {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<App />} />
+        <Route path="/home" element={<Home />} />
+      </Routes>
+    </Router>
+  );
+};
 
-# Example API endpoint
-@app.route('/api/data', methods=['GET'])
-def get_data():
-    try:
-        cursor = mysql.connection.cursor()
-        cursor.execute("SELECT * FROM data")
-        data = cursor.fetchall()
-        cursor.close()
-        return jsonify(data), 200
-    except Exception as e:
-        return jsonify({'error': f'Database error: {str(e)}'}), 500
-
-# Login route
-@app.route('/login', methods=['POST'])
-# Login route
-@app.route('/login', methods=['POST'])
-def login():
-    if request.method == 'POST':
-        data = request.json
-        username = data.get('username')
-        password = data.get('password')
-
-        if not username or not password:
-            return jsonify({'error': 'Username and password are required'}), 400
-
-        cursor = None  # Initialize cursor outside the try block
-
-        try:
-            cursor = mysql.connection.cursor()
-            cursor.execute("SELECT * FROM users WHERE username = %s AND password = %s", (username, password))
-            user = cursor.fetchone()
-
-            if user:
-                session['logged_in'] = True
-                session['username'] = username
-                session['name'] = user.get('name', '')  # Adjust if 'name' field is present
-                logging.info(f"User '{username}' logged in successfully.")
-                return jsonify({'message': 'Login successful', 'username': username, 'name': session['name']}), 200
-            else:
-                logging.warning(f"Login failed for username '{username}'. Invalid username or password.")
-                return jsonify({'error': 'Invalid username or password'}), 401
-
-        except Exception as e:
-            logging.error(f"Database error during login for username '{username}': {str(e)}")
-            return jsonify({'error': f'Database error: {str(e)}'}), 500
-
-        finally:
-            if cursor:
-                cursor.close()
-
-    return jsonify({'error': 'Method not allowed'}), 405
-
-# Logout route
-@app.route('/logout')
-def logout():
-    session.pop('logged_in', None)
-    session.pop('username', None)
-    session.pop('name', None)
-    logging.info('User logged out successfully.')
-    return jsonify({'message': 'Logout successful'}), 200
-
-# Route to serve React frontend (catch-all route)
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def catch_all(path):
-    if path.startswith('static/') or path.startswith('media/'):
-        # Serve static files directly
-        return send_from_directory(app.static_folder, path)
-    else:
-        # Serve React's index.html for all other paths
-        return send_from_directory(app.static_folder, 'index.html')
-    
-@app.route('/testdb')
-def test_db_connection():
-    try:
-        cursor = mysql.connection.cursor()
-        cursor.execute("SELECT 1")
-        result = cursor.fetchone()
-        cursor.close()
-        return jsonify({'message': 'MySQL connection successful'}), 200
-    except Exception as e:
-        return jsonify({'error': f'Failed to connect to MySQL: {str(e)}'}), 500
-
-if __name__ == '__main__':
-    app.run(debug=True)
+export default Main;
